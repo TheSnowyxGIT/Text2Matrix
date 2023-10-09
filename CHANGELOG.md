@@ -1,5 +1,11 @@
 # text2matrix
 
+## 1.0.3
+
+### Patch Changes
+
+- fd3154c: fix estimateFontSize
+
 ## 1.0.2
 
 ### Patch Changes
