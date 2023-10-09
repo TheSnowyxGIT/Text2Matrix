@@ -47,7 +47,7 @@ export function estimateFontSize(
       "ABCDEFGHIJKLMNOPQRSTUVWYZ",
       0,
       0,
-      maxHeight
+      currentSize
     );
     let sizes = sizePath.getBoundingBox();
     let height = Math.round(Math.abs(sizes.y2 - sizes.y1));
