@@ -1,6 +1,6 @@
 {
   "name": "text2matrix",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Convert text strings into customizable pixel matrices with options for max height, letter spacing, and more. Ideal for LED displays and creative typographic applications.",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
