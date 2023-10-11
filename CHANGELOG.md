@@ -1,5 +1,11 @@
 # text2matrix
 
+## 1.1.2
+
+### Patch Changes
+
+- 2df3e47: export getFileHash
+
 ## 1.1.1
 
 ### Patch Changes
