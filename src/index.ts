@@ -4,32 +4,45 @@ import * as encHex from "crypto-js/enc-hex";
 
 const fonts = new Map<string, Font>();
 
-export function getFileHash(input: string | Buffer): Promise<string> {
+export function getFileHash(input: string | ArrayBuffer): Promise<string> {
   return new Promise(async (resolve, reject) => {
-    if (Buffer.isBuffer(input)) {
-      return SHA256(encHex.parse(input.toString("hex"))).toString();
-    }
+    const encHex = require("crypto-js/enc-hex");
+    const SHA256 = require("crypto-js/sha256");
 
-    if (typeof window === "undefined") {
-      const fs = require("fs") as typeof import("fs");
-      try {
-        const fileBuffer = fs.readFileSync(input);
-        return SHA256(encHex.parse(fileBuffer.toString("hex"))).toString();
-      } catch (err) {
-        throw new Error(`Error reading the file: ${err}`);
-      }
+    if (typeof input !== "string") {
+      const byteArray = new Uint8Array(input);
+      let hexString = "";
+      byteArray.forEach((byte) => {
+        hexString += byte.toString(16).padStart(2, "0");
+      });
+      resolve(SHA256(encHex.parse(hexString)).toString());
     } else {
-      reject(
-        new Error(
-          "File hashing from path is not supported in the browser environment"
-        )
-      );
+      if (typeof window === "undefined") {
+        const fs = require("fs") as typeof import("fs");
+        try {
+          const fileBuffer = fs.readFileSync(input);
+          const byteArray = new Uint8Array(fileBuffer.buffer);
+          let hexString = "";
+          byteArray.forEach((byte) => {
+            hexString += byte.toString(16).padStart(2, "0");
+          });
+          resolve(SHA256(encHex.parse(hexString)).toString());
+        } catch (err) {
+          reject(new Error(`Error reading the file: ${err}`));
+        }
+      } else {
+        reject(
+          new Error(
+            "File hashing from path is not supported in the browser environment"
+          )
+        );
+      }
     }
   });
 }
 
 export async function addFont(
-  data: string | Buffer,
+  data: string | ArrayBuffer,
   hash?: string
 ): Promise<string> {
   let key = hash;
@@ -174,7 +187,7 @@ export class Font {
   }
 
   private promise: Promise<void>;
-  constructor(data: string | Buffer) {
+  constructor(data: string | ArrayBuffer) {
     this.promise = new Promise((resolve, reject) => {
       if (typeof data === "string") {
         opentype.load(data, (err, font) => {
