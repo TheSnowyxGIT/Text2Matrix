@@ -1,8 +1,5 @@
-import { Canvas } from "canvas";
 import * as opentype from "opentype.js";
-import { buffer } from "stream/consumers";
 import * as crypto from "crypto";
-import * as fs from "fs";
 
 const fonts = new Map<string, Font>();
 
@@ -19,12 +16,24 @@ export function getFileHash(
       return;
     }
 
-    const fileStream = fs.createReadStream(input);
-    fileStream.on("error", (err) => reject(err));
-    fileStream.pipe(hash);
-    fileStream.on("end", () => {
-      resolve(hash.digest("hex"));
-    });
+    // Check if we're running in a Node.js environment
+    if (typeof window === "undefined") {
+      const fs = require("fs") as typeof import("fs");
+
+      const fileStream = fs.createReadStream(input);
+      fileStream.on("error", (err) => reject(err));
+      fileStream.pipe(hash);
+      fileStream.on("end", () => {
+        resolve(hash.digest("hex"));
+      });
+    } else {
+      // Handle browser environment
+      reject(
+        new Error(
+          "File hashing from path is not supported in the browser environment"
+        )
+      );
+    }
   });
 }
 
@@ -96,6 +105,11 @@ export function estimateFontSize(
   }
 }
 
+let Canvas: typeof import("canvas").Canvas;
+if (typeof window === "undefined") {
+  Canvas = require("canvas").Canvas;
+}
+
 export function text2matrix(
   text: string,
   font: string | Font,
@@ -128,14 +142,26 @@ export function text2matrix(
   let height = Math.round(Math.abs(sizes.y2 - sizes.y1));
   let width = Math.round(Math.abs(sizes.x2 - sizes.x1));
 
-  var canvas = new Canvas(width, height);
-  var ctx = canvas.getContext("2d");
+  let canvas;
+  let ctx;
+  if (typeof window === "undefined") {
+    // Node.js environment
+    canvas = new Canvas(width, height);
+    ctx = canvas.getContext("2d");
+  } else {
+    // Browser environment
+    canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    ctx = canvas.getContext("2d");
+  }
+
   const path = _font.font.getPath(text, 0, height, options.fontSize, {
     letterSpacing: options.letterSpacing,
   });
   path.draw(ctx as any);
 
-  const imageData = ctx.getImageData(0, 0, width, height);
+  const imageData = ctx!.getImageData(0, 0, width, height);
   const matrix = [];
 
   for (let y = height - 1; y >= 0; y--) {
