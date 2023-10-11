@@ -1,5 +1,11 @@
 # text2matrix
 
+## 1.1.3
+
+### Patch Changes
+
+- 0fe9f7d: add platform compatibility for nodejs and browser
+
 ## 1.1.2
 
 ### Patch Changes
