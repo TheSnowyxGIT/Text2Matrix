@@ -1,5 +1,12 @@
 # text2matrix
 
+## 1.1.0
+
+### Minor Changes
+
+- b21abd3: fonts storage by hash sha256
+  allow loading fonts by Buffers
+
 ## 1.0.3
 
 ### Patch Changes
