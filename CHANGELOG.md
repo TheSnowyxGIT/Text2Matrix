@@ -1,5 +1,11 @@
 # text2matrix
 
+## 1.1.1
+
+### Patch Changes
+
+- 2ad69a5: fix addFont to allow known hash
+
 ## 1.1.0
 
 ### Minor Changes
