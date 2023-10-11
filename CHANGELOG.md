@@ -1,5 +1,11 @@
 # text2matrix
 
+## 1.1.4
+
+### Patch Changes
+
+- 531bac4: try to make available for browser
+
 ## 1.1.3
 
 ### Patch Changes
