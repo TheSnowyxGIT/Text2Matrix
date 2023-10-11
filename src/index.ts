@@ -28,8 +28,14 @@ function getFileHash(
   });
 }
 
-export async function addFont(data: string | Buffer): Promise<string> {
-  const key = await getFileHash(data);
+export async function addFont(
+  data: string | Buffer,
+  hash?: string
+): Promise<string> {
+  let key = hash;
+  if (!key) {
+    key = await getFileHash(data);
+  }
   if (!fonts.has(key)) {
     const font = new Font(data);
     await font.waitLoading();
