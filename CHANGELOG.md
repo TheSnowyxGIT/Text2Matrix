@@ -1,5 +1,11 @@
 # text2matrix
 
+## 1.1.6
+
+### Patch Changes
+
+- d2303b2: switch from buffer to ArrayBuffer
+
 ## 1.1.4
 
 ### Patch Changes
