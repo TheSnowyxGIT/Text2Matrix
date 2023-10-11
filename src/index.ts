@@ -1,22 +1,49 @@
 import { Canvas } from "canvas";
 import * as opentype from "opentype.js";
+import { buffer } from "stream/consumers";
+import * as crypto from "crypto";
+import * as fs from "fs";
 
 const fonts = new Map<string, Font>();
 
-export async function addFont(fontPath: string): Promise<void> {
-  if (!fonts.has(fontPath)) {
-    const font = new Font(fontPath);
+function getFileHash(
+  input: string | Buffer,
+  algorithm = "sha256"
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const hash = crypto.createHash(algorithm);
+
+    if (Buffer.isBuffer(input)) {
+      hash.update(input);
+      resolve(hash.digest("hex"));
+      return;
+    }
+
+    const fileStream = fs.createReadStream(input);
+    fileStream.on("error", (err) => reject(err));
+    fileStream.pipe(hash);
+    fileStream.on("end", () => {
+      resolve(hash.digest("hex"));
+    });
+  });
+}
+
+export async function addFont(data: string | Buffer): Promise<string> {
+  const key = await getFileHash(data);
+  if (!fonts.has(key)) {
+    const font = new Font(data);
     await font.waitLoading();
-    fonts.set(fontPath, font);
+    fonts.set(key, font);
   }
+  return key;
 }
 
-export function hasFont(fontPath: string): boolean {
-  return fonts.has(fontPath);
+export function hasFont(key: string): boolean {
+  return fonts.has(key);
 }
 
-export function removeFont(fontPath: string): void {
-  fonts.delete(fontPath);
+export function removeFont(key: string): void {
+  fonts.delete(key);
 }
 
 type Options = {
@@ -128,15 +155,19 @@ export class Font {
   }
 
   private promise: Promise<void>;
-  constructor(private fontPath: string) {
+  constructor(data: string | Buffer) {
     this.promise = new Promise((resolve, reject) => {
-      opentype.load(this.fontPath, (err, font) => {
-        if (err || !font) {
-          reject(err);
-        }
-        this._font = font;
-        resolve();
-      });
+      if (typeof data === "string") {
+        opentype.load(data, (err, font) => {
+          if (err || !font) {
+            return reject(err);
+          }
+          this._font = font;
+        });
+      } else {
+        this._font = opentype.parse(data);
+      }
+      resolve();
     });
   }
 

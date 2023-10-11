@@ -18,8 +18,8 @@ const text2matrix = require("text2matrix");
 async function main() {
   const text = "Hello World!";
   const myFont = "myFont.ttf";
-  await text2matrix.addFont(myFont);
-  const matrix = text2matrix.text2matrix(text, myFont, {
+  const key = await text2matrix.addFont(myFont);
+  const matrix = text2matrix.text2matrix(text, key, {
     maxHeight: 10,
     letterSpacing: 1,
   });
