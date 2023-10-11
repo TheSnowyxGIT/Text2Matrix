@@ -6,7 +6,7 @@ import * as fs from "fs";
 
 const fonts = new Map<string, Font>();
 
-function getFileHash(
+export function getFileHash(
   input: string | Buffer,
   algorithm = "sha256"
 ): Promise<string> {
