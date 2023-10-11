@@ -1,33 +1,24 @@
 import * as opentype from "opentype.js";
-import * as crypto from "crypto";
+import * as SHA256 from "crypto-js/sha256";
+import * as encHex from "crypto-js/enc-hex";
 
 const fonts = new Map<string, Font>();
 
-export function getFileHash(
-  input: string | Buffer,
-  algorithm = "sha256"
-): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const hash = crypto.createHash(algorithm);
-
+export function getFileHash(input: string | Buffer): Promise<string> {
+  return new Promise(async (resolve, reject) => {
     if (Buffer.isBuffer(input)) {
-      hash.update(input);
-      resolve(hash.digest("hex"));
-      return;
+      return SHA256(encHex.parse(input.toString("hex"))).toString();
     }
 
-    // Check if we're running in a Node.js environment
     if (typeof window === "undefined") {
       const fs = require("fs") as typeof import("fs");
-
-      const fileStream = fs.createReadStream(input);
-      fileStream.on("error", (err) => reject(err));
-      fileStream.pipe(hash);
-      fileStream.on("end", () => {
-        resolve(hash.digest("hex"));
-      });
+      try {
+        const fileBuffer = fs.readFileSync(input);
+        return SHA256(encHex.parse(fileBuffer.toString("hex"))).toString();
+      } catch (err) {
+        throw new Error(`Error reading the file: ${err}`);
+      }
     } else {
-      // Handle browser environment
       reject(
         new Error(
           "File hashing from path is not supported in the browser environment"
@@ -105,11 +96,6 @@ export function estimateFontSize(
   }
 }
 
-let Canvas: typeof import("canvas").Canvas;
-if (typeof window === "undefined") {
-  Canvas = require("canvas").Canvas;
-}
-
 export function text2matrix(
   text: string,
   font: string | Font,
@@ -146,6 +132,7 @@ export function text2matrix(
   let ctx;
   if (typeof window === "undefined") {
     // Node.js environment
+    const Canvas = require("canvas").Canvas;
     canvas = new Canvas(width, height);
     ctx = canvas.getContext("2d");
   } else {

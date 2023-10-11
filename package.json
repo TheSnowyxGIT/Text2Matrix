@@ -44,13 +44,20 @@
   },
   "homepage": "https://github.com/TheSnowyxGIT/Text2Matrix#readme",
   "dependencies": {
-    "@changesets/cli": "^2.26.2",
     "canvas": "^2.11.2",
+    "crypto-js": "^4.1.1",
     "opentype.js": "^1.3.4"
   },
+  "browser": {
+    "fs": false,
+    "canvas": false
+  },
   "devDependencies": {
+    "@changesets/cli": "^2.26.2",
+    "@types/crypto-js": "^4.1.2",
     "@types/node": "^20.8.3",
     "@types/opentype.js": "^1.3.6",
+    "esbuild": "^0.19.4",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   }
