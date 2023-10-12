@@ -57,6 +57,13 @@ export async function addFont(
   return key;
 }
 
+export function getFont(key: string): Font {
+  if (!fonts.has(key)) {
+    throw new Error("Font not loaded");
+  }
+  return fonts.get(key)!;
+}
+
 export function hasFont(key: string): boolean {
   return fonts.has(key);
 }
