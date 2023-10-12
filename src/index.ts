@@ -1,6 +1,4 @@
 import * as opentype from "opentype.js";
-import * as SHA256 from "crypto-js/sha256";
-import * as encHex from "crypto-js/enc-hex";
 
 const fonts = new Map<string, Font>();
 
