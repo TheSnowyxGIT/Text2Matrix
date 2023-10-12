@@ -1,5 +1,11 @@
 # text2matrix
 
+## 1.1.7
+
+### Patch Changes
+
+- a06e422: add getFont
+
 ## 1.1.6
 
 ### Patch Changes
