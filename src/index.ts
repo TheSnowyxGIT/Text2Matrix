@@ -192,7 +192,7 @@ export class Font {
   }
 
   private promise: Promise<void>;
-  constructor(data: string | ArrayBuffer) {
+  constructor(data: string | ArrayBuffer | opentype.Font) {
     this.promise = new Promise((resolve, reject) => {
       if (typeof data === "string") {
         opentype.load(data, (err, font) => {
@@ -201,6 +201,8 @@ export class Font {
           }
           this._font = font;
         });
+      } else if (data instanceof opentype.Font) {
+        this._font = data;
       } else {
         this._font = opentype.parse(data);
       }
