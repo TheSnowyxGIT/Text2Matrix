@@ -1,5 +1,11 @@
 # text2matrix
 
+## 1.1.9
+
+### Patch Changes
+
+- cd73e02: upadte constructor
+
 ## 1.1.8
 
 ### Patch Changes
