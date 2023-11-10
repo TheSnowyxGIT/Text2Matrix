@@ -1,5 +1,11 @@
 # text2matrix
 
+## 1.1.8
+
+### Patch Changes
+
+- 4c8ba2c: refactor
+
 ## 1.1.7
 
 ### Patch Changes
