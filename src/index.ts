@@ -48,8 +48,7 @@ export async function addFont(
     key = await getFileHash(data);
   }
   if (!fonts.has(key)) {
-    const font = new Font(data);
-    await font.waitLoading();
+    const font = await Font.loadAsync(data);
     fonts.set(key, font);
   }
   return key;
@@ -70,11 +69,27 @@ export function removeFont(key: string): void {
   fonts.delete(key);
 }
 
-type Options = {
-  fontSize?: number;
-  maxHeight?: number;
-  letterSpacing?: number;
-};
+export function getMaxHeight(font: string | Font, fontSize: number): number {
+  let _font: Font;
+  if (typeof font === "string") {
+    if (!fonts.get(font)) {
+      throw new Error("Font not loaded");
+    }
+    _font = fonts.get(font)!;
+  } else {
+    _font = font;
+  }
+
+  const sizePath = _font.font.getPath(
+    "ABCDEFGHIJKLMNOPQRSTUVWYZ",
+    0,
+    0,
+    fontSize
+  );
+  let sizes = sizePath.getBoundingBox();
+  let height = Math.round(Math.abs(sizes.y2 - sizes.y1));
+  return height;
+}
 
 export function estimateFontSize(
   font: string | Font,
@@ -94,14 +109,8 @@ export function estimateFontSize(
   let currentSize = maxHeight;
 
   while (true) {
-    const sizePath = _font.font.getPath(
-      "ABCDEFGHIJKLMNOPQRSTUVWYZ",
-      0,
-      0,
-      currentSize
-    );
-    let sizes = sizePath.getBoundingBox();
-    let height = Math.round(Math.abs(sizes.y2 - sizes.y1));
+    const height = getMaxHeight(_font, currentSize);
+
     if (height === maxHeight) {
       return currentSize;
     }
@@ -113,6 +122,32 @@ export function estimateFontSize(
     }
   }
 }
+
+export function getSizeNormalizer(font: string | Font) {
+  let _font: Font;
+  if (typeof font === "string") {
+    if (!fonts.get(font)) {
+      throw new Error("Font not loaded");
+    }
+    _font = fonts.get(font)!;
+  } else {
+    _font = font;
+  }
+
+  const x1 = 8;
+  const x2 = 16;
+  const y1 = estimateFontSize(_font, x1);
+  const y2 = estimateFontSize(_font, x2);
+  const a = (y2 - y1) / (x2 - x1);
+  const b = y1 - a * x1;
+  return (x: number) => a * x + b;
+}
+
+type Options = {
+  fontSize?: number;
+  normalizeSize?: boolean;
+  letterSpacing?: number;
+};
 
 export function text2matrix(
   text: string,
@@ -130,13 +165,11 @@ export function text2matrix(
     _font = font;
   }
 
-  if (options.maxHeight && options.fontSize) {
-    throw new Error("Can't set both maxHeight and fontSize");
-  }
-  if (!options.maxHeight) {
-    options.fontSize = options.fontSize ?? 20;
-  } else {
-    options.fontSize = estimateFontSize(_font, options.maxHeight);
+  options.normalizeSize =
+    options.normalizeSize === undefined ? true : options.normalizeSize;
+  options.fontSize = options.fontSize ?? 11;
+  if (options.normalizeSize) {
+    options.fontSize = _font.normalizeSize(options.fontSize);
   }
 
   const sizePath = _font.font.getPath(text, 0, 0, options.fontSize, {
@@ -182,8 +215,16 @@ export function text2matrix(
 }
 
 export class Font {
-  private _font?: opentype.Font;
+  static async loadAsync(data: string | ArrayBuffer): Promise<Font> {
+    const font = new Font(data);
+    await font.waitLoading();
+    return font;
+  }
+  static load(font: opentype.Font): Font {
+    return new Font(font);
+  }
 
+  private _font?: opentype.Font;
   public get font(): opentype.Font {
     if (!this._font) {
       throw new Error("Font not loaded");
@@ -191,8 +232,9 @@ export class Font {
     return this._font;
   }
 
+  private sizeNormalizer: (size: number) => number = (x) => x;
   private promise: Promise<void>;
-  constructor(data: string | ArrayBuffer | opentype.Font) {
+  private constructor(data: string | ArrayBuffer | opentype.Font) {
     this.promise = new Promise((resolve, reject) => {
       if (typeof data === "string") {
         opentype.load(data, (err, font) => {
@@ -206,8 +248,13 @@ export class Font {
       } else {
         this._font = opentype.parse(data);
       }
+      this.sizeNormalizer = getSizeNormalizer(this);
       resolve();
     });
+  }
+
+  normalizeSize(size: number): number {
+    return this.sizeNormalizer(size);
   }
 
   public async waitLoading(): Promise<void> {

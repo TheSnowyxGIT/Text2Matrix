@@ -20,7 +20,8 @@ async function main() {
   const myFont = "myFont.ttf";
   const key = await text2matrix.addFont(myFont);
   const matrix = text2matrix.text2matrix(text, key, {
-    maxHeight: 10,
+    fontSize: 10,
+    normalize: true, // normalize to max height so fontSize represents max height. default true
     letterSpacing: 1,
   });
 }
