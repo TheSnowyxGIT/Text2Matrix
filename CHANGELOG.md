@@ -1,5 +1,11 @@
 # text2matrix
 
+## 1.1.10
+
+### Patch Changes
+
+- ae1763d: add normalisation of font size
+
 ## 1.1.9
 
 ### Patch Changes
