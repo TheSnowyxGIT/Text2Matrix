@@ -13,16 +13,14 @@ npm install text2matrix
 ## Usage
 
 ```javascript
-const text2matrix = require("text2matrix");
+const { Font, Text } = require("text2matrix");
 
 async function main() {
   const text = "Hello World!";
   const myFont = "myFont.ttf";
-  const key = await text2matrix.addFont(myFont);
-  const matrix = text2matrix.text2matrix(text, key, {
-    fontSize: 10,
-    normalize: true, // normalize to max height so fontSize represents max height. default true
-    letterSpacing: 1,
-  });
+  const font = await Font.fromPath(myFont);
+  const text = new Text(text, font, { fontSize: 16 });
+  text.draw(); // only node environment, creates a png file
+  const matrix = text.matrix; // returns a 2D array of grayscale values between 0 and 1
 }
 ```
