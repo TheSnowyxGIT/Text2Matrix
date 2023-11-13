@@ -1,5 +1,14 @@
 # text2matrix
 
+## 2.0.0
+
+### Major Changes
+
+- 55c566f: refactor all
+  upgrade Font class
+  add Text class
+  handle font ascender / descender / etc
+
 ## 1.1.10
 
 ### Patch Changes
